@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Socket IO game</title>
+</head>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+
+<script>
+    var y=0;
+var x=0;
+var key=0;
+
+// document.ready= init;
+
+
+    var socket = io('http://localhost:3002');
+    socket.on('connection', function () {
+        console.log("connected to server");
+    });
+
+    socket.on('private',function(data){
+       console.log(data)
+    });
+
+    socket.on('public',function(data){
+        console.log(data);
+        document.getElementById("cont").innerHTML = "";
+        data.forEach((value)=>{         
+        var img= document.createElement('img');
+           img.setAttribute('src',value.img);
+           img.setAttribute('data-attr',value.key)
+           img.style.top= value.top+"px";
+           img.style.left= value.left+"px";
+           document.getElementById('cont').appendChild(img);
+        })
+
+    });
+
+       document.onkeydown = checkKey;
+
+        function checkKey(e) {
+     if (e.keyCode>=37 && e.keyCode<=40){
+
+
+            var src= document.getElementById("pic").value;
+     
+                 
+                if (e.keyCode == '38') {
+                    // up arrow
+                    y = y - 10;
+                }
+                else if (e.keyCode == '40') {
+                    // down arrow
+                    y = y + 10;
+                }
+                else if (e.keyCode == '37') {
+                    // left arrow
+                    x = x - 10;
+                }
+                else if (e.keyCode == '39') {
+                    // right arrow
+                    x = x + 10;
+                }
+
+              var info={
+               top:y,
+               left:x,
+               img:src,
+               key:key,
+               }
+        
+        
+        socket.emit('private',info)
+
+
+   }
+        }
+       function startGame(){
+           var src= document.getElementById("pic").value;
+           y = parseInt(Math.floor(Math.random() * 500 ))
+           x = parseInt(Math.floor(Math.random() * 1000 ))
+           key= parseInt(Math.floor(Math.random() * 999 ))
+
+           var info={
+               top:y,
+               left:x,
+               img:src,
+               key:key,
+           }
+           socket.emit('private',info)
+           console.log(info)
+        }
+</script>
+
+<style>
+    #cont{
+        position: relative;
+    }
+ img{
+     position: absolute;
+     width: 50px;
+ }
+
+
+</style>
+
+<body>
+    <div>
+        <div style="width:fit-content; margin: 0 auto;">
+            <h3 style="text-align: center">Click to start</h3>
+            <input type="text" id="pic" placeholder="image source">
+            <button type="button" onclick="startGame()">Click me</button>
+        </div>
+
+
+    </div>
+    <div style="width:1000px; height:500px; margin:0 auto; background-color:lightgreen" id="cont">
+
+
+    </div>
+</body>
+
+</html>
